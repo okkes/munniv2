@@ -1,0 +1,99 @@
+# munni — functionality checklist
+
+The high-level manual test inventory (#194): the CORE things to walk to
+know each feature works — not a changelog. Feature changes update the
+affected line (or add one only for a genuinely new core flow); details,
+fixes and internals never become items. The rule lives in the
+assistant's memory alongside the guide/tour maintenance rules.
+
+## Identity & onboarding
+- [ ] Sign in (web + native return), demo mode, offline profile
+- [ ] Fresh signup walks onboarding (name, avatar, country) and an interrupted one resumes
+- [ ] Session survives restarts; an expired session recovers or says so honestly
+- [ ] App lock: set up, unlock with PIN and passkey, disable; a refresh honors the configured auto-lock delay
+
+## Spaces & sharing
+- [ ] Create a space (period, currency, start date); edit its identity; switch spaces
+- [ ] Invite-lock toggle gates all sharing; invite an existing friend with a role; invite a new person from the members screen (accept joins the space)
+- [ ] Members: view, change role, remove; the removed member is told once and lands in another space; a read-only member keeps pulling quietly (no eviction popup, writes park)
+- [ ] Leave a space; history start date moves with honest consequences
+
+## Home
+- [ ] Balance band modes and per-account picks (safe-to-spend converts through the display lens); blocks render, reorder, hide; a sparse desktop home centers one wider column; tab returns render instantly (remount cache, one-shot fade); the debts block has no see-all (the card is the door); a new-transaction row arrives with the New lens on
+- [ ] Quick-add FAB reaches all six doors
+- [ ] Review nudge, new transactions, upcoming costs and notifications reflect reality; see-all lands on the Upcoming page (recurring + loan dues together)
+
+## Transactions
+- [ ] List: search (title + amount, highlighted), quick filters, filter sheet; filters survive a detail detour; with linked shown separately, same-day pairs sit together as one visual unit
+- [ ] Transfer pairs collapse to one row; per-account view keeps both legs
+- [ ] Add/edit a manual transaction end to end (amount math, account, category, counterparty — required for movement categories, date guard)
+- [ ] Detail: recategorize, rename, counterparty set/remove, recurring/event links, notes, receipt, customize sections, delete
+- [ ] Split a transaction into parts; edit parts; un-split; split categories (€ and %) on rows and parts
+- [ ] Reimbursements: link both directions (with clamping errors), parts included; unlink restores
+
+## Review
+- [ ] Walk the queue: split leads the card, then category, counterparty (movement confirms require one; the row hides after an explicit plain filing), counter-transaction, recurring + event (appear once a category stands), notes — confirm and skip; titles wrap in full; the category picker can filter BY counter account (pick suggests that account)
+- [ ] Memory pre-fills return; bulk "apply to similar" applies what it promised and resets to select-all on every new card; the per-sibling counter queue holds the deck and counts down
+
+## Categories
+- [ ] Browse and search the picker (parent names match, ◆ filter); manage: create/edit/delete customs with impact warnings; locked families refuse subs
+- [ ] Account-typed rows only offer categories that fit
+
+## Recurring & debts
+- [ ] Detection inbox → accept walks the occurrence review; linked charges take the category (auto-attached ones adopt it too but stay unreviewed); patterns are per-account, one suggestion per steady amount, cross-account echoes deduped, each card names its source account; the recurring form quick-creates its counterparty and shows account faces
+- [ ] Ranges (period/next/year) tell the truth; the year chart plots paid-to-now and estimate-from-now with tappable dots (Show transactions disables when a month has nothing behind it); Upcoming rows say the days left
+- [ ] A loan account shows debt, plan, payments and payoff; lender detection lands on Debts
+
+## Accounts & banks
+- [ ] Global overview: two segments — the global pool and collapsible per-space cards (closed by default); defaults fold, echoes jump to the real row, archived shares say who stopped sharing; an unattached account offers "Attach to this space"
+- [ ] Connect a bank (choice, consent, callback, nightly fetch, reconnect); imports (bank chooser, preview, progress, result → explicit attach); an import beside a bank link stays its OWN account until the explicit merge (which runs the reconcile)
+- [ ] Attach/detach per space with type (the attach door lands on the final step; shared spaces warn before attach); rename locally vs globally; type change re-reviews that space only
+- [ ] Edit an account (a manual balance edit records an adjustment transaction); delete manual and bank-fed accounts cleanly; the CASH WALLET default takes hand entries and can be deleted (no heal-back; the explicit Default pick revives it); funding pots create without a balance question
+
+## Plans (budgets, goals, allocation, events)
+- [ ] Budget lifecycle: create with categories, thresholds warn, carry-over works
+- [ ] Goals fund and progress; allocation envelopes fill per period
+- [ ] Events: create, attach transactions (select-all screen), per-day costs and drill
+
+## Portfolio, insights & receipts
+- [ ] Holdings buy/sell and valuation; overview/trends/insights drill correctly; a drill's transaction opens INSIDE the overview (right pane at lg) and the chosen period survives the detour; uncategorized reads gray everywhere; funding-filed recurrings get no leak advice
+- [ ] Receipt capture (camera/webcam/upload) links to transactions; shopping connections pull receipts
+
+## Splits (bill splitting) & friends
+- [ ] Split session with a friend end to end (invite, expenses, settle)
+- [ ] Friends: add by ID, accept, profile sheet (copy ID, remove)
+
+## Settings & platform
+- [ ] Space settings rows all lead somewhere sane; global settings: profile (account deletion narrates its progress), devices, language (EN/NL/TR), appearance cycle, export, push, tips
+- [ ] Scrolling a search list dismisses the keyboard (the closing relayout waits for the finger to lift — no mid-scroll jump); multi-field forms keep it while scrolling
+- [ ] PWA installs and updates; native shells build, deep-link back and capture photos
+- [ ] Native deployment from the wizard: Android/iOS feature toggles; hosted track dispatches CI + downloads the signed .aab/.apk artifacts in-page for the store-mandated first upload; local track = LAN mode (family on https://munni-<env>.<ip-dashed>.sslip.io hostnames behind one local-CA Caddy — real https, so Enable Banking consents work locally; localhost twin kept for sign-in/CORS; CA download at http://ca.<base> for phones) + a store channel PER environment app.munni.local.<env> — CI builds against the GitHub environment `local` (localEnv + publish inputs; per-env NATIVE_LOCAL_CHANNEL_<ENV> gate, first upload manual once per env, skipped-not-red until then) and delivers via the Play internal track and TestFlight
+- [ ] Vault secrets grouped in per-environment folders (shared/prod/…): plain item names, folder = environment; every item carries an explanatory note (what it is for, wizard-generated vs operator-entered, rotation); re-sync refreshes, environment delete drops its folder + its GlitchTip org
+- [ ] Admin portal + munni-control distinguish "not on the admin list" (a real 403) from an unreachable/blocked API (network/CORS/5xx get their own message)
+- [ ] Delete everything forgets the environments completely (registry + per-env stores + LAN marker + shared render; production included) — Set up & start recreates production automatically; master buttons follow the family state (no Delete/Stop before anything exists, Set up disabled while everything runs); the delete ends with a cleanup verification (family containers/volumes/networks by compose project, renders, registry, LAN marker) — a confirmed-clean machine retires the Delete button, leftovers keep it armed and are named; only the step-3 credential store + upload-key certificate survive
+- [ ] Deleting an environment or everything OFFERS store retirement (when step-3 store credentials exist): Play internal testing cleared + TestFlight builds expired (testers lose the app immediately); store records and package names stay (no delete API) — except an ASC-record-less bundle id, whose portal registration is deleted outright
+- [ ] Certificate trust is part of setup, not a separate card: Set up/LAN-on installs the family root on this PC automatically (one Windows consent); phone install hints live in the Android/iOS cards
+- [ ] Wizard step 2 "Features & accounts" is ONE grid of tiles: a tile per connection (GitHub, registry; domain + Synology on the NAS track — tag Connection, no toggle) and a tile per feature (brand mark, toggle switch, purpose, static tags Recommended / Popular / Optional / App distribution / With the apps) — a feature that is on shows its account chip (Saved ✓ / Missing / n/m saved / Optional / Skipped) and a Manage button; Select recommended turns the recommended set on without turning anything off; the former separate credentials step is gone (stepper renumbers)
+- [ ] Manage opens the account in place (the tile spans the grid): explainer, "Where these values come from", fields, Save / Check / Skip for now — one tile at a time (opening one closes the other), Manage ↔ Close; jumps from the rail, the to-do and the health card open the tile the same way; the GitHub tile opens by itself until connected and survives re-renders
+- [ ] The step opens with the Integration health card: one line per integration the picked features need (GitHub included when it matters) with its state and a jump to its tile; Check all re-verifies every saved integration through the helper (stored values never reach the page; the registry token gained a helper-side check) and writes each verdict into its tile
+- [ ] Optional integrations never block: the crash-mail SMTP url is optional (chip Optional, excluded from the secrets count, the rail's Blocking list and the family to-do); every tile has Skip for now — a skipped integration counts as done in the chip, the health card, the rail, the stepper and the feature tile until a value is saved (auto-unskip) or the skip is undone; a mail address pasted as SMTP url is named as such with the Gmail app-password recipe
+- [ ] The header, the sticky stepper and the output drawer are constrained to the main column's width (1300px) — no more steps spread across an ultra-wide screen
+- [ ] Store readiness is polled, not clicked: with the step-3 Play service account / ASC key stored, the wizard detects the one-time manual store upload by itself and flips per-env auto-publish (no Enable button); iOS's one manual step is the ASC New-App record — the pill, the build verdict and CI all name it with the exact bundle id (local channel: missing record = warning, not red; a cloud-signing permission failure stays red and names the ASC-key role fix; local iOS build numbers count seconds since 2026 like the Android versionCode)
+- [ ] Android and iOS each name their OWN store package (a field per card; iOS follows Android until named apart — a Play-burned package rolls while the ASC record keeps its bundle); CI reads NATIVE_LOCAL_APP_ID / NATIVE_LOCAL_APP_ID_IOS
+- [ ] Push is wired AS CODE on the local track: Build Firebase-enables the Play service account's own Cloud project, registers each env's Android/iOS apps, bakes real google-services.json / GoogleService-Info.plist into the builds (stub keeps builds green until then) and reuses that service account as the FCM sender, re-rendering + restarting the env's api until /health says fcm (a stored-but-unapplied sender dropped native pushes silently) — Firebase apps are named `munni local <env> android|ios`; the push pill names the exact blocker (role grant, disabled API); one-time floors: grant the SA Firebase Admin + Service Usage Admin (adding Firebase needs serviceusage.services.enable, which Firebase Admin lacks — or add Firebase by hand once in the Firebase console), upload the APNs key for iOS push
+- [ ] Local track keeps itself up to date: the helper's update loop (fetch → fast-forward when the tree is clean → re-render after a pull → compose pull → up → self-restart when its own code moved), "Check for updates now", the Task Scheduler logon task via autonomy.cmd; a dirty checkout pauses the pull and names it, images still update
+- [ ] Machine-owned Apple Development certificate: the first iOS Build mints it through mint-apple-cert.yml (environment input), the helper pulls the run artifact (p12 + serial) into the machine store, the wizard ships APPLE_DEV_CERT_P12/PASSWORD into env local (rewriting) — CI imports instead of minting; ONE certificate per Apple team: the mint never revokes the certificate its environment still holds, CI fails fast (naming the repair) when Apple no longer lists the imported one instead of minting throwaways, the prune runs as a sweep for leftovers, the wizard asks Apple by serial before each build and re-mints a revoked/expired one by itself, and skips minting when the repo already holds one at repository level
+- [ ] Sign in with Apple on the local track (LAN https): feature + step-3 card enabled locally, LAN mode follows the toggle, per-environment return URLs listed on the card, Apple credentials family-wide in the shared store, headless re-renders feed social credentials to the Logto connector
+- [ ] Setup wizard, family vs environments (2026-09-09, docs/wizard-family-env-plan.md): sticky stepper with per-section state chips and a status rail (progress ring, counters, blocking / not-checked / optional lists, next-step action); family credentials as compact rows grouped by kind (Connections, Bank providers, Stores & signing, Sign-in providers, Extras) that fold once saved; the local track's step 4 starts the family (shared services, updater, vault) and step 5 holds one workspace per environment with Overview (sign-in, crash, push, store records + its own to-do list), Registrations (per-environment Google/Apple callbacks verified with the provider, Enable Banking checkbox), Phones (the Android/iOS cards bound to that environment — no picker) and Access tabs; the native section stays for the NAS track only
+- [ ] Setup wizard as one guided page (2026-09-09): section numbers follow what is visible per track; credential cards grouped into "before Set up & start" and "after the family runs" (the GitHub card moves with them); a "What's left for you" list on the local track in execution order — detected states from Docker, the stores, Play/ASC/Firebase and the updater, checkboxes for what no provider can confirm, "open" jumps to the card; every manual instruction is a numbered-circle step list; every address is the family's own (callbacks, gc-callback, shared services, intro) and follows LAN mode; the environment picker sits above both native cards; the helper's output lives in a bottom drawer that opens itself when something streams
+- [ ] Social sign-in setup as far as the providers allow (neither Google nor Apple has an API that creates an OAuth client / Services ID): the Google card deep-links the consent screen + client creation into the Play service account's project, both cards list every environment's callback (domain + URL for Apple) with copy buttons, Check/Save ask Google and Apple whether each callback is registered (a refused one warns and names itself), and the Apple Team ID falls back to the TestFlight card's; the Logto connectors live under their fixed ids (google-universal / apple-universal — a generated id made the documented callback a redirect_uri_mismatch; bootstrap replaces such an instance, sign-ins stay linked by target), and the App ID's Sign in with Apple capability carries the primary-app setting (without it Apple records nothing and keys/Services IDs find no identifier; the list, not a 409, decides what is enabled); an App ID pasted as the Apple client id is named as such (the web flow needs the Services ID), and Apple's own error message rides along with a refused return URL
+- [ ] The GitHub card reconnects by itself: a successful Connect saves the PAT into the machine store like every other step-3 credential (repo name already persisted); the next wizard load prefills and reconnects
+- [ ] The local Android app trusts the family CA out of the box (CI bakes the machine's root into the build via NATIVE_FAMILY_CA_PEM); phone-side root.crt install is only for browser use — INCLUDING the sign-in hop (OIDC opens the system browser, which ignores the app's bundled anchor) — and for iOS; the wizard prints the exact dashed ca.<ip-dashed>.sslip.io link
+- [ ] LOCAL builds show a "Trust this network's certificate" button + hint on the login screen (EN/NL/TR; derived from the sslip public origin, absent everywhere else); the hint walks BOTH platforms (Android CA install; iPhone: Profile Downloaded → Install, then Certificate Trust Settings → full trust); the ca site serves root.crt as an application/x-x509-ca-cert attachment so phones download it for the installer instead of rendering PEM text
+- [ ] A sign-in that cannot start (e.g. the OIDC discovery fetch dies on an untrusted certificate) names the failure under the button (EN/NL/TR, reported to crash tracking) instead of a silently dead button; local builds append the certificate-trust hint
+- [ ] A nonexistent repo name is created as a fork (different owner) or a template-generate copy (same account — forks cannot land in their own account), all branches included
+- [ ] Hosted web/admin read their config at runtime (/runtime-config.js from container env) — one public image serves prod, staging, the iac pair and the local stacks, each pointing at its own API/Logto/GlitchTip
+- [ ] Operator consoles are two separate apps: the admin PORTAL (per environment: users, diagnosis, admin grants, own-env bank consents with foreign-count note, quota) and the munni-CONTROL cockpit (shared level: every environment's consents grouped by origin, read-only, plus quota/health) — control never offers delete, the portal refuses deleting another environment's consent
+- [ ] Local family: shared services (GlitchTip with its own db, https vault behind a local-CA Caddy, OCR, control, pgAdmin over every server) + ANY number of environments from the wizard's registry (+ Add with a 2-5 letter name and a dev/main release channel; prod slot 0 and dev slot 1 are the defaults) — each env has its own Logto AND its own uniquely-named postgres under its own password (plain "postgres" must never register on the shared network: service names collide across envs there); env cards are state-aware (Start OR Stop), shared always runs (only Stop/Delete everything touch it), deleting an env purges its GoCardless consents and forgets it
+- [ ] The local network mode is fully automatic (no manual LAN/localhost buttons): plain localhost is the default; ticking Android/iOS/Enable Banking flips the family to LAN https (and starts the CI build for native, queued until GitHub connects when needed); unticking them all drops it back to localhost — reconciled on toggle and once per wizard load. LAN-on also installs the family CA into this PC's user store via certutil (one Windows consent; redo button on the card)
+- [ ] Offline end to end: everything works, syncs on return, conflicts converge
